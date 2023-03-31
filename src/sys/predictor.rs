@@ -18,7 +18,7 @@ use std::ptr::{null, null_mut};
 
 #[throws(TreeRiteError)]
 pub fn treelite_predictor_load(library_path: &Path, num_worker_thread: usize) -> PredictorHandle {
-    let library_path = CString::new(library_path.to_string_lossy().to_owned().to_string())?;
+    let library_path = CString::new(library_path.to_string_lossy().into_owned())?;
     let mut out = null_mut();
 
     unsafe { TreelitePredictorLoad(library_path.as_ptr(), num_worker_thread as c_int, &mut out) }
@@ -56,7 +56,7 @@ pub fn treelite_predictor_predict_batch(
     }
     .check()?;
 
-    (output_result, out_result_size as u64)
+    (output_result, out_result_size)
 }
 
 #[throws(TreeRiteError)]
@@ -73,7 +73,7 @@ pub fn treelite_predictor_query_num_class(handle: PredictorHandle) -> u64 {
     let mut out = 0;
 
     unsafe { TreelitePredictorQueryNumClass(handle, &mut out) }.check()?;
-    out as u64
+    out
 }
 
 #[throws(TreeRiteError)]
@@ -82,7 +82,7 @@ pub fn treelite_predictor_query_result_size(handle: PredictorHandle, batch: DMat
 
     unsafe { TreelitePredictorQueryResultSize(handle, batch, &mut out) }.check()?;
 
-    out as u64
+    out
 }
 
 #[throws(TreeRiteError)]
@@ -91,7 +91,7 @@ pub fn treelite_predictor_query_num_feature(handle: PredictorHandle) -> u64 {
 
     unsafe { TreelitePredictorQueryNumFeature(handle, &mut out) }.check()?;
 
-    out as u64
+    out
 }
 
 #[throws(TreeRiteError)]
@@ -120,8 +120,7 @@ pub fn treelite_predictor_query_pred_transform(handle: PredictorHandle) -> Strin
 
     unsafe { CStr::from_ptr(out) }
         .to_string_lossy()
-        .to_owned()
-        .to_string()
+        .into_owned()
 }
 
 #[throws(TreeRiteError)]
@@ -132,8 +131,7 @@ pub fn treelite_predictor_query_threshold_type(handle: PredictorHandle) -> Strin
 
     unsafe { CStr::from_ptr(out) }
         .to_string_lossy()
-        .to_owned()
-        .to_string()
+        .into_owned()
 }
 
 #[throws(TreeRiteError)]

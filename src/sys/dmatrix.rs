@@ -34,8 +34,8 @@ impl FloatInfo for f32 {
 }
 
 #[throws(TreeRiteError)]
-pub fn treelite_dmatrix_create_from_array<'a, F: Float + FloatInfo>(
-    data: ArrayView<'a, F, Ix2>,
+pub fn treelite_dmatrix_create_from_array<F: Float + FloatInfo>(
+    data: ArrayView<F, Ix2>,
 ) -> DMatrixHandle {
     if !data.is_standard_layout() {
         throw!(TreeRiteError::DataNotCContiguous);
@@ -56,9 +56,7 @@ pub fn treelite_dmatrix_create_from_array<'a, F: Float + FloatInfo>(
 }
 
 #[throws(TreeRiteError)]
-pub fn treelite_dmatrix_create_from_slice<'a, T: Float + FloatInfo>(
-    data: &'a [T],
-) -> DMatrixHandle {
+pub fn treelite_dmatrix_create_from_slice<T: Float + FloatInfo>(data: &[T]) -> DMatrixHandle {
     let mut out = null_mut();
     unsafe {
         TreeliteDMatrixCreateFromMat(
@@ -66,6 +64,31 @@ pub fn treelite_dmatrix_create_from_slice<'a, T: Float + FloatInfo>(
             Into::<&'static CStr>::into(T::DATA_TYPE).as_ptr(),
             1,
             data.len() as u64 as size_t,
+            &T::MISSING as *const T as *const c_void,
+            &mut out,
+        )
+    }
+    .check()?;
+    out
+}
+
+#[throws(TreeRiteError)]
+pub fn treelite_dmatrix_create_from_slice_with_cols<T: Float + FloatInfo>(
+    data: &[T],
+    ncols: u64,
+) -> DMatrixHandle {
+    let len = data.len();
+    if (len as u64) % ncols != 0 {
+        throw!(TreeRiteError::DataNotDivisibleByColumns);
+    }
+    let nrows = (len as u64) / ncols;
+    let mut out = null_mut();
+    unsafe {
+        TreeliteDMatrixCreateFromMat(
+            data.as_ptr() as *const c_void,
+            Into::<&'static CStr>::into(T::DATA_TYPE).as_ptr(),
+            nrows,
+            ncols,
             &T::MISSING as *const T as *const c_void,
             &mut out,
         )
@@ -127,5 +150,5 @@ pub fn treelite_dmatrix_get_dimension(handle: DMatrixHandle) -> (u64, u64, u64) 
 
     unsafe { TreeliteDMatrixGetDimension(handle, &mut nrow, &mut ncol, &mut nelem) }.check()?;
 
-    (nrow as u64, ncol as u64, nelem as u64)
+    (nrow, ncol, nelem)
 }

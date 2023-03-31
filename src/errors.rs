@@ -21,4 +21,7 @@ pub enum TreeRiteError {
 
     #[error("Data is not C contiguous")]
     DataNotCContiguous,
+
+    #[error("Data not divisible by specified column count")]
+    DataNotDivisibleByColumns,
 }

@@ -1,10 +1,10 @@
 use crate::errors::TreeRiteError;
-use crate::sys::DMatrixHandle;
 use crate::sys::{
     treelite_dmatrix_create_from_array, treelite_dmatrix_create_from_csr_format,
-    treelite_dmatrix_create_from_slice, treelite_dmatrix_free, treelite_dmatrix_get_dimension,
-    FloatInfo,
+    treelite_dmatrix_create_from_slice, treelite_dmatrix_create_from_slice_with_cols,
+    treelite_dmatrix_free, treelite_dmatrix_get_dimension, DMatrixHandle, FloatInfo,
 };
+
 use fehler::throws;
 use ndarray::{AsArray, Ix2};
 use num_traits::Float;
@@ -41,8 +41,19 @@ where
     /// Create a single row DMatrix from a slice of floats. Useful for prediction for a single instance.
     /// This function is zero copy.
     #[throws(TreeRiteError)]
-    pub fn from_slice<'a>(array: &'a [F]) -> DMatrix<F> {
+    pub fn from_slice(array: &[F]) -> DMatrix<F> {
         array.try_into()?
+    }
+
+    /// Create a DMatrix from a slice of floats and a column count.
+    /// This function is zero copy.
+    #[throws(TreeRiteError)]
+    pub fn from_slice_with_cols(array: &[F], ncols: u64) -> DMatrix<F> {
+        let handle = treelite_dmatrix_create_from_slice_with_cols(array, ncols)?;
+        DMatrix {
+            handle,
+            _phantom: PhantomData,
+        }
     }
 
     /// Create a csr format DMatrix.

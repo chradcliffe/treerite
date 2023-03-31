@@ -8,7 +8,7 @@
 //! use treerite::{DMatrix, Predictor, TreeRiteError};
 //!
 //! #[throws(TreeRiteError)]
-//! fn main() {
+//! fn some_function() {
 //!    let model = Predictor::load("examples/iris.so", 1).unwrap();
 //!
 //!    let feat: Vec<f64> = vec![7.7, 2.8, 6.7, 2.];

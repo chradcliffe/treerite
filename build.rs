@@ -32,9 +32,9 @@ fn build_lib() {
 fn add_search_path() {
     for path in std::env::var("LD_LIBRARY_PATH")
         .unwrap_or_else(|_| "".to_string())
-        .split(":")
+        .split(':')
     {
-        if path.trim().len() == 0 {
+        if path.trim().is_empty() {
             continue;
         }
         println!("cargo:rustc-link-search={}", path);
@@ -47,7 +47,7 @@ fn add_search_path() {
         .unwrap_or_else(|_| "".to_string())
         .split(";")
     {
-        if path.trim().len() == 0 {
+        if path.trim().is_empty() {
             continue;
         }
         println!("cargo:rustc-link-search={}", path);

@@ -6,8 +6,8 @@ pub use self::bindings::{DMatrixHandle, PredictorHandle, PredictorOutputHandle};
 use self::bindings::{TreeliteGetLastError, TreeliteRegisterLogCallback};
 pub use self::dmatrix::{
     treelite_dmatrix_create_from_array, treelite_dmatrix_create_from_csr_format,
-    treelite_dmatrix_create_from_slice, treelite_dmatrix_free, treelite_dmatrix_get_dimension,
-    FloatInfo,
+    treelite_dmatrix_create_from_slice, treelite_dmatrix_create_from_slice_with_cols,
+    treelite_dmatrix_free, treelite_dmatrix_get_dimension, FloatInfo,
 };
 pub use self::predictor::{
     treelite_create_predictor_output_vector, treelite_delete_predictor_output_vector,
@@ -68,9 +68,9 @@ impl DataType {
     }
 }
 
-impl Into<&'static CStr> for DataType {
-    fn into(self) -> &'static CStr {
-        match self {
+impl From<DataType> for &'static CStr {
+    fn from(val: DataType) -> Self {
+        match val {
             DataType::Float32 => DTYPE_FLOAT32,
             DataType::Float64 => DTYPE_FLOAT64,
             DataType::UInt32 => DTYPE_UINT32,
@@ -90,7 +90,7 @@ impl TryInto<DataType> for &'static CStr {
             Ok(DataType::UInt32)
         } else {
             throw!(TreeRiteError::UnknownDataTypeString(
-                self.to_string_lossy().to_owned().to_string()
+                self.to_string_lossy().into_owned()
             ))
         }
     }
@@ -112,7 +112,7 @@ impl RetCodeCheck for c_int {
 pub fn get_last_error() -> TreeRiteError {
     let cs = unsafe { CStr::from_ptr(TreeliteGetLastError()) };
 
-    TreeRiteError::CError(cs.to_string_lossy().to_owned().to_string())
+    TreeRiteError::CError(cs.to_string_lossy().into_owned())
 }
 
 #[throws(TreeRiteError)]
